@@ -289,6 +289,8 @@ obj_desc <- function(x) {
   )
 }
 obj_dispatch <- function(x) {
+  if (identical(class(x), "S7_super"))
+    return(x$dispatch)
   switch(obj_type(x),
     missing = "MISSING",
     base = base_class(x),
