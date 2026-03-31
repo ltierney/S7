@@ -22,3 +22,24 @@ method_lookup_error_message <- function(name, types) {
 S7_dispatch <- function() {
   .External2(method_call_, sys.function(-1L), sys.frame(-1L))
 }
+
+S7_dispatch_call <- function(gen) {
+    dispatch_args <- gen@dispatch_args
+
+    ## build the source code
+    args <- paste(dispatch_args, collapse = ", ")
+    if (length(dispatch_args) == 1)
+        obform <- dispatch_args
+    else
+        obform <- sprintf("list(%s)", args)
+    template <- "S7::method(sys.function(-3L), object = %s)(%s, ...)"
+    text <- sprintf(template, obform, args)
+
+    parse(text = text)[[1]]
+}
+
+S7_dispatch <- function() {
+    gen <- sys.function(-1L)
+    call <- S7_dispatch_call(gen)
+    eval(call, parent.frame())
+}
