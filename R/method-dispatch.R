@@ -23,6 +23,9 @@ S7_dispatch <- function() {
   .External2(method_call_, sys.function(-1L), sys.frame(-1L))
 }
 
+unsuper <- function(x)
+    if (inherits(x, "S7_super")) x$object else x
+
 S7_dispatch_call <- function(gen) {
     dispatch_args <- gen@dispatch_args
 
@@ -32,10 +35,53 @@ S7_dispatch_call <- function(gen) {
         obform <- dispatch_args
     else
         obform <- sprintf("list(%s)", args)
+    call_args <- paste(lapply(dispatch_args,
+                              function(x) sprintf("S7:::unsuper(%s)", x)),
+                       collapse = ", ")
     template <- "S7::method(sys.function(-3L), object = %s)(%s, ...)"
-    text <- sprintf(template, obform, args)
+    text <- sprintf(template, obform, call_args)
 
     parse(text = text)[[1]]
+}
+
+method_from_dispatch <- function(generic, dispatch) {
+    check_is_S7(generic, S7_generic)
+    method <- .Call(method_, generic, dispatch, environment(), 
+        FALSE)
+    if (is.null(method)) 
+        stop("no method found") ## this needs to do better
+    else method
+}
+
+is_super <- function(x)
+    ! missing(x) && inherits(x, "S7_super")
+
+obj_disp <- function(x) {
+    if (missing(x))
+        "MISSING"
+    else if (is_super(x))
+        x$dispatch
+    else
+        obj_dispatch(x)
+}
+
+S7_dispatch_call <- function(gen) {
+    dispatch_args <- gen@dispatch_args
+
+    ## build the source code
+    disp <- paste(sprintf("S7:::obj_disp(%s)", dispatch_args), collapse = ", ")
+    displine <- sprintf("dispatch <- list(%s)", disp)
+
+    supers <- sprintf("if (S7:::is_super(%s)) %s <- %s$object",
+                      dispatch_args, dispatch_args, dispatch_args)
+
+    args <- paste(dispatch_args, collapse = ", ")
+    mline <-
+        sprintf("S7:::method_from_dispatch(generic, dispatch)(%s, ...)", args)
+
+    text <- c("generic <- sys.function(-3L)", displine, supers, mline)
+
+    parse(text = c("{", paste("    ", text), "}"))[[1]]
 }
 
 S7_dispatch <- function() {
