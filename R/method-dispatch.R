@@ -48,8 +48,11 @@ method_from_dispatch <- function(generic, dispatch) {
     check_is_S7(generic, S7_generic)
     method <- .Call(method_, generic, dispatch, environment(), 
         FALSE)
-    if (is.null(method)) 
-        stop("no method found") ## this needs to do better
+    if (is.null(method)) {
+        types <- lapply(dispatch, `[[`, 1)
+        names(types) <- generic@dispatch_args
+        method_lookup_error(generic@name, types)
+    }
     else method
 }
 
