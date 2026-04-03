@@ -78,9 +78,9 @@ S7_dispatch_call <- function(gen) {
     supers <- sprintf("if (S7:::is_super(%s)) %s <- %s$object",
                       dispatch_args, dispatch_args, dispatch_args)
 
-    args <- paste(dispatch_args, collapse = ", ")
+    args <- paste(names(formals(gen)), collapse = ", ")
     mline <-
-        sprintf("S7:::method_from_dispatch(generic, dispatch)(%s, ...)", args)
+        sprintf("S7:::method_from_dispatch(generic, dispatch)(%s)", args)
 
     text <- c("generic <- sys.function(-3L)", displine, supers, mline)
 
