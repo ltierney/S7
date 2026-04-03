@@ -23,27 +23,6 @@ S7_dispatch <- function() {
   .External2(method_call_, sys.function(-1L), sys.frame(-1L))
 }
 
-unsuper <- function(x)
-    if (inherits(x, "S7_super")) x$object else x
-
-S7_dispatch_call <- function(gen) {
-    dispatch_args <- gen@dispatch_args
-
-    ## build the source code
-    args <- paste(dispatch_args, collapse = ", ")
-    if (length(dispatch_args) == 1)
-        obform <- dispatch_args
-    else
-        obform <- sprintf("list(%s)", args)
-    call_args <- paste(lapply(dispatch_args,
-                              function(x) sprintf("S7:::unsuper(%s)", x)),
-                       collapse = ", ")
-    template <- "S7::method(sys.function(-3L), object = %s)(%s, ...)"
-    text <- sprintf(template, obform, call_args)
-
-    parse(text = text)[[1]]
-}
-
 method_from_dispatch <- function(generic, dispatch) {
     check_is_S7(generic, S7_generic)
     method <- .Call(method_, generic, dispatch, environment(), 
