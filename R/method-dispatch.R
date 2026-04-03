@@ -68,6 +68,16 @@ obj_disp <- function(x) {
         obj_dispatch(x)
 }
 
+call_args <- function(gen) {
+    args <- names(formals(gen))
+    nargs <- length(args)
+    dots_pos <- match("...", args, nargs)
+    paste(ifelse(seq_len(nargs) > dots_pos,
+                 sprintf("%s = %s", args, args),
+                 args),
+          collapse = ", ")
+}
+
 S7_dispatch_call <- function(gen) {
     dispatch_args <- gen@dispatch_args
 
@@ -78,7 +88,7 @@ S7_dispatch_call <- function(gen) {
     supers <- sprintf("if (S7:::is_super(%s)) %s <- %s$object",
                       dispatch_args, dispatch_args, dispatch_args)
 
-    args <- paste(names(formals(gen)), collapse = ", ")
+    args <- call_args(gen)
     mline <-
         sprintf("S7:::method_from_dispatch(generic, dispatch)(%s)", args)
 
