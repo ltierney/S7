@@ -80,7 +80,7 @@ new_generic <- function(name, dispatch_args, fun = NULL) {
   }
 
   val <- S7_generic(fun, name = name, dispatch_args = dispatch_args)
-  attr(val, "call") <- compiler::compile(S7:::S7_dispatch_call(val))
+  val@dispatch_call <- compiler::compile(S7:::S7_dispatch_call(val))
   val
 }
 

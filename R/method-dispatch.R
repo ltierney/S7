@@ -58,7 +58,7 @@ call_args <- function(gen) {
 }
 
 S7_dispatch_call <- function(gen) {
-    call <- attr(gen, "call")
+    call <- gen@dispatch_call
     if (! is.null(call))
         return(call)
     dispatch_args <- gen@dispatch_args
