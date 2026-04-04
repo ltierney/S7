@@ -57,7 +57,13 @@ call_args <- function(gen) {
           collapse = ", ")
 }
 
+## can't use "identical" since sys.function duplicates !!??!
+dispatch_calls <- hashtab("identical", 100)
+
 S7_dispatch_call <- function(gen) {
+    call <- gethash(dispatch_calls, gen)
+    if (! is.null(call))
+        return(call)
     dispatch_args <- gen@dispatch_args
 
     ## build the source code
@@ -73,7 +79,12 @@ S7_dispatch_call <- function(gen) {
 
     text <- c("generic <- sys.function(-3L)", displine, supers, mline)
 
-    parse(text = c("{", paste("    ", text), "}"))[[1]]
+    call <- parse(text = c("{", paste("    ", text), "}"))[[1]]
+
+    if (numhash(dispatch_calls) > 100)
+        clrhash(dispatch_calls)
+    sethash(dispatch_calls, gen, call)
+    call
 }
 
 S7_dispatch <- function() {
