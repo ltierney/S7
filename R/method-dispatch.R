@@ -73,7 +73,8 @@ S7_dispatch_call <- function(gen) {
     args <- call_args(gen)
     mline <-
         sprintf("S7:::method_from_dispatch(generic, dispatch)(%s)", args)
-
+    mline <- "S7:::S3_dispatch(S7:::method_from_dispatch(generic, dispatch), environment())"
+    mline <- "S7:::method_from_dispatch(generic, dispatch)"
     text <- c("generic <- sys.function(-3L)", displine, supers, mline)
 
     parse(text = c("{", paste("    ", text), "}"))[[1]]
@@ -82,5 +83,11 @@ S7_dispatch_call <- function(gen) {
 S7_dispatch <- function() {
     gen <- sys.function(-1L)
     call <- S7_dispatch_call(gen)
-    eval(call, parent.frame())
+    method <- eval(call, parent.frame())
+    ##S3_dispatch(method, parent.frame())
+    .Call(S3_dispatch_, method, parent.frame())
 }
+
+S3_dispatch <- function(method, env)
+    .Call(S3_dispatch_, method, env)
+

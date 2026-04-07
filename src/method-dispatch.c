@@ -277,3 +277,10 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   UNPROTECT(4);
   return out;
 }
+
+SEXP R_DispatchMethod(SEXP meth, SEXP rho, SEXP funsym, SEXP newvars);
+
+SEXP S3_dispatch_(SEXP meth, SEXP rho)
+{
+    return R_DispatchMethod(meth, rho, R_NilValue, R_NilValue);
+}
