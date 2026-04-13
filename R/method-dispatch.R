@@ -72,7 +72,7 @@ S7_dispatch_call <- function(gen) {
 
     args <- call_args(gen)
     mline <-
-        sprintf("S7:::method_from_dispatch(generic, dispatch)(%s)", args)
+        sprintf(".Call(S7:::unmatch_args_, formals(generic), environment());S7:::method_from_dispatch(generic, dispatch)(...)")
 
     text <- c("generic <- sys.function(-3L)", displine, supers, mline)
 

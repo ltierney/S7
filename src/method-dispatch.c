@@ -277,3 +277,11 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   UNPROTECT(4);
   return out;
 }
+
+void R_UnmatchArgs(SEXP forms, SEXP env);
+
+SEXP unmatch_args_(SEXP forms, SEXP env)
+{
+    R_UnmatchArgs(forms, env);
+    return R_NilValue;
+}
