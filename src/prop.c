@@ -1,7 +1,3 @@
-#define R_NO_REMAP
-#include <R.h>
-#include <Rinternals.h>
-#include <Rversion.h>
 #include "compat.h"
 
 extern SEXP sym_S7_class;
@@ -32,8 +28,8 @@ SEXP eval_here(SEXP lang) {
 
 static inline
 SEXP ns_get(const char* name) {
-  SEXP val = s7_get_var_in_frame(ns_S7, Rf_install(name), R_UnboundValue);
-  if (val == R_UnboundValue)
+  SEXP val = s7_get_var_in_frame(ns_S7, Rf_install(name), NULL);
+  if (val == NULL)
     Rf_error("Can't find `%s` in the S7 namespace", name);
   return val;
 }
