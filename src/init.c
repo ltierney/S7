@@ -11,7 +11,7 @@ extern SEXP S7_class_(SEXP, SEXP);
 extern SEXP S7_object_(void);
 extern SEXP prop_(SEXP, SEXP);
 extern SEXP prop_set_(SEXP, SEXP, SEXP, SEXP);
-extern SEXP S3_dispatch_(SEXP meth, SEXP rho);
+extern SEXP callClosure_(SEXP call, SEXP fun, SEXP rho, SEXP sysparent);
 
 #define CALLDEF(name, n)  {#name, (DL_FUNC) &name, n}
 
@@ -20,7 +20,7 @@ static const R_CallMethodDef CallEntries[] = {
     CALLDEF(S7_object_, 0),
     CALLDEF(prop_, 2),
     CALLDEF(prop_set_, 4),
-    CALLDEF(S3_dispatch_, 2),
+    CALLDEF(callClosure_, 4),
     {NULL, NULL, 0}
 };
 
@@ -98,7 +98,7 @@ void R_init_S7(DllInfo *dll)
     fn_base_quote = Rf_eval(Rf_install("quote"), R_BaseEnv);
     fn_base_missing = Rf_eval(Rf_install("missing"), R_BaseEnv);
 
-    ns_S7 = Rf_eval(Rf_install("S7"), R_NamespaceRegistry);
+    ns_S7 = R_getRegisteredNamespace("S7");
     R_PreserveObject(R_TRUE = Rf_ScalarLogical(1));
     R_PreserveObject(R_FALSE = Rf_ScalarLogical(0));
     R_PreserveObject(s7_proto_object = make_s7_proto_object());

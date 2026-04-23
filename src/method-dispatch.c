@@ -1,4 +1,5 @@
 #define R_NO_REMAP
+#define ENABLE_LEGACY_NONAPI_FUNS
 #include <R.h>
 #include <Rinternals.h>
 #include <Rversion.h>
@@ -278,9 +279,10 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   return out;
 }
 
-SEXP R_DispatchMethod(SEXP meth, SEXP rho, SEXP funsym, SEXP newvars);
+SEXP R_callClosure(SEXP call, SEXP fun, SEXP rho, SEXP suppliedvars,
+		   SEXP sysparent, Rboolean forward);
 
-SEXP S3_dispatch_(SEXP meth, SEXP rho)
+SEXP callClosure_(SEXP call, SEXP fun, SEXP rho, SEXP sysparent)
 {
-    return R_DispatchMethod(meth, rho, R_NilValue, R_NilValue);
+    return R_callClosure(call, fun, rho, R_NilValue, sysparent, TRUE);
 }
