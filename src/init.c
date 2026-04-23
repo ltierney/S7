@@ -1,5 +1,4 @@
-#include <R.h>
-#include <Rinternals.h>
+#include "compat.h"
 #include <stdlib.h> // for NULL
 #include <R_ext/Rdynload.h>
 
@@ -98,7 +97,7 @@ void R_init_S7(DllInfo *dll)
     fn_base_quote = Rf_eval(Rf_install("quote"), R_BaseEnv);
     fn_base_missing = Rf_eval(Rf_install("missing"), R_BaseEnv);
 
-    ns_S7 = Rf_eval(Rf_install("S7"), R_NamespaceRegistry);
+    ns_S7 = R_FindNamespace(Rf_mkString("S7"));
     R_PreserveObject(R_TRUE = Rf_ScalarLogical(1));
     R_PreserveObject(R_FALSE = Rf_ScalarLogical(0));
     R_PreserveObject(s7_proto_object = make_s7_proto_object());
