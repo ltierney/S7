@@ -87,7 +87,7 @@ S7_dispatch <- function() {
     margs <- names(formals(gen))
     names(margs) <- names(formals(gen))
     mcall <- as.call(lapply(c(gen@name, margs), as.name))
-    .Call(callClosure_, mcall, method, sys.frame(-1L), sys.frame(-2L))
+    .External2(callClosure_, mcall, method, sys.frame(-1L), sys.frame(-2L))
 }
 
 

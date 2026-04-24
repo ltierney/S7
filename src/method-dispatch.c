@@ -282,7 +282,13 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
 SEXP R_callClosure(SEXP call, SEXP fun, SEXP rho, SEXP suppliedvars,
 		   SEXP sysparent, Rboolean forward);
 
-SEXP callClosure_(SEXP call, SEXP fun, SEXP rho, SEXP sysparent)
+SEXP callClosure_(SEXP call_, SEXP op_, SEXP args_, SEXP env_)
 {
+    args_ = CDR(args_);
+    SEXP call = CAR(args_); args_ = CDR(args_);
+    SEXP fun = CAR(args_); args_ = CDR(args_);
+    SEXP rho = CAR(args_); args_ = CDR(args_);
+    SEXP sysparent = CAR(args_); args_ = CDR(args_);
+
     return R_callClosure(call, fun, rho, R_NilValue, sysparent, TRUE);
 }
