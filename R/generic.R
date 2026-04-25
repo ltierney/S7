@@ -79,9 +79,7 @@ new_generic <- function(name, dispatch_args, fun = NULL) {
     check_generic(fun)
   }
 
-  val <- S7_generic(fun, name = name, dispatch_args = dispatch_args)
-  val@dispatch_call <- compiler::compile(S7:::S7_dispatch_call(val))
-  val
+  S7_generic(fun, name = name, dispatch_args = dispatch_args)
 }
 
 check_dispatch_args <- function(dispatch_args, fun = NULL) {
