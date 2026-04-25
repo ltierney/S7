@@ -279,22 +279,8 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   return out;
 }
 
-SEXP R_callClosure(SEXP call, SEXP fun, SEXP rho, SEXP suppliedvars,
-		   SEXP sysparent, Rboolean forward);
-
-SEXP callClosure_(SEXP call_, SEXP op_, SEXP args_, SEXP env_)
-{
-    args_ = CDR(args_);
-    SEXP call = CAR(args_); args_ = CDR(args_);
-    SEXP fun = CAR(args_); args_ = CDR(args_);
-    SEXP rho = CAR(args_); args_ = CDR(args_);
-    SEXP sysparent = CAR(args_); args_ = CDR(args_);
-
-    return R_callClosure(call, fun, rho, R_NilValue, sysparent, TRUE);
-}
-
 SEXP R_DispatchClosure(SEXP gen, SEXP mname, SEXP method, SEXP rho,
-		       SEXP callrho, SEXP suppliedvars);
+		       SEXP callrho);
 
 SEXP dispatchClosure_(SEXP call_, SEXP op_, SEXP args_, SEXP env_)
 {
@@ -305,5 +291,5 @@ SEXP dispatchClosure_(SEXP call_, SEXP op_, SEXP args_, SEXP env_)
     SEXP rho = CAR(args_); args_ = CDR(args_);
     SEXP callrho = CAR(args_); args_ = CDR(args_);
 
-    return R_DispatchClosure(gen, mname, method, rho, callrho, R_NilValue);
+    return R_DispatchClosure(gen, mname, method, rho, callrho);
 }
