@@ -12,6 +12,7 @@ extern SEXP S7_object_(void);
 extern SEXP prop_(SEXP, SEXP);
 extern SEXP prop_set_(SEXP, SEXP, SEXP, SEXP);
 extern SEXP callClosure_(SEXP, SEXP, SEXP, SEXP);
+extern SEXP dispatchClosure_(SEXP, SEXP, SEXP, SEXP);
 
 #define CALLDEF(name, n)  {#name, (DL_FUNC) &name, n}
 
@@ -26,6 +27,7 @@ static const R_CallMethodDef CallEntries[] = {
 static const R_ExternalMethodDef ExternalEntries[] = {
     CALLDEF(method_call_, 2),
     CALLDEF(callClosure_, 4),
+    CALLDEF(dispatchClosure_, 4),
     {NULL, NULL, 0}
 };
 
