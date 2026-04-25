@@ -84,5 +84,6 @@ S7_dispatch <- function() {
     gen <- sys.function(-1L)
     call <- S7_dispatch_call(gen)
     method <- eval(call, parent.frame())
-    .External2(dispatchClosure_, gen, method, sys.frame(-1L), sys.frame(-2L))
+    mname <- as.name("<method>")
+    .External2(dispatchClosure_, mname, method, sys.frame(-1L), sys.frame(-2L))
 }

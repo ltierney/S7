@@ -293,16 +293,16 @@ SEXP callClosure_(SEXP call_, SEXP op_, SEXP args_, SEXP env_)
     return R_callClosure(call, fun, rho, R_NilValue, sysparent, TRUE);
 }
 
-SEXP R_DispatchClosure(SEXP generic, SEXP method, SEXP rho, SEXP callrho,
+SEXP R_DispatchClosure(SEXP mname, SEXP method, SEXP rho, SEXP callrho,
 		       SEXP suppliedvars);
 
 SEXP dispatchClosure_(SEXP call_, SEXP op_, SEXP args_, SEXP env_)
 {
     args_ = CDR(args_);
-    SEXP gen = CAR(args_); args_ = CDR(args_);
+    SEXP mname = CAR(args_); args_ = CDR(args_);
     SEXP method = CAR(args_); args_ = CDR(args_);
     SEXP rho = CAR(args_); args_ = CDR(args_);
     SEXP callrho = CAR(args_); args_ = CDR(args_);
 
-    return R_DispatchClosure(gen, method, rho, callrho, R_NilValue);
+    return R_DispatchClosure(mname, method, rho, callrho, R_NilValue);
 }
