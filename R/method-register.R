@@ -173,9 +173,19 @@ check_method <- function(method, generic, name = paste0(generic@name, "(???)")) 
   if (!is.function(method)) {
     stop(sprintf("%s must be a function", name), call. = FALSE)
   }
-
+  if (typeof(method) != "closure") {
+    ## the implementation assumes implicitly that S7 methods are closures:
+    ## - formals() returns NILL for primitives
+    ## - attributes cannot be assigned to pritives
+    stop(sprintf("%s must be a closure", name), call. = FALSE)
+  }
   generic_formals <- formals(args(generic))
   method_formals <- formals(method)
+  if (is.null(method_formals)) {
+      method_formals <- formals(args(method))
+      if (is.null(method_formals))
+          stop("proposed method has no formals", call. = FALSE)
+  }
   generic_args <- names(generic_formals)
   method_args <- names(method_formals)
 
