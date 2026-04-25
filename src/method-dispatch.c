@@ -170,86 +170,44 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   SEXP generic = CAR(args_); args_ = CDR(args_);
   SEXP envir = CAR(args_); args_ = CDR(args_);
 
-  // Get the number of arguments to the generic
+  // Get the formals and the number of arguments used for dispatch
   SEXP formals = getClosureFormals(generic);
-  R_xlen_t n_args = Rf_xlength(formals);
-  // And how many are used for dispatch
   SEXP dispatch_args = Rf_getAttrib(generic, sym_dispatch_args);
   R_xlen_t n_dispatch = Rf_xlength(dispatch_args);
 
-  // Allocate a list to store the classes for the arguments
+  // Allocate a vector to store the classes for the arguments
   SEXP dispatch_classes = PROTECT(Rf_allocVector(VECSXP, n_dispatch));
 
-  // Allocate a pairlist to hold the arguments for when we call the method
-  SEXP mcall = PROTECT(Rf_lcons(R_NilValue, R_NilValue));
-  SEXP mcall_tail = mcall;
-
-  PROTECT_INDEX arg_pi, val_pi;
-  PROTECT_WITH_INDEX(R_NilValue, &arg_pi); // unnecessary, for rchk only
+  PROTECT_INDEX val_pi;
   PROTECT_WITH_INDEX(R_NilValue, &val_pi); // unnecessary, for rchk only
 
-  // For each of the arguments to the generic
-  for (R_xlen_t i = 0; i < n_args; ++i) {
+  // For each of the dispatch arguments
+  for (R_xlen_t i = 0; i < n_dispatch; ++i, formals = CDR(formals)) {
 
     SEXP name = TAG(formals);
 
-    if (i < n_dispatch) {
+    if (R_GetBindingType(name, envir) == R_BindingTypeMissing)
+      SET_VECTOR_ELT(dispatch_classes, i, Rf_mkString("MISSING"));
+    else {
 
-      SEXP arg = Rf_findVarInFrame(envir, name);
-      if (arg == R_MissingArg) {
+      SEXP val = R_getVar(name, envir, FALSE);
+      REPROTECT(val, val_pi); // unnecessary, for rchk only
 
-        APPEND_NODE(mcall_tail, name, arg);
-        SET_VECTOR_ELT(dispatch_classes, i, Rf_mkString("MISSING"));
+      if (Rf_inherits(val, "S7_super")) {
 
-      } else { // arg not missing, is a PROMSXP
+        // Put the super() stored class dispatch vector into dispatch_classes
+        SET_VECTOR_ELT(dispatch_classes, i, VECTOR_ELT(val, 1));
 
-        // Force the promise so we can look up its class.
-        // However, we preserve and pass along the promise itself so that
-        // methods can still call substitute()
-        // Instead of Rf_eval(arg, R_EmptyEnv), we do Rf_eval(name, envir), so that
-        // - if TYPEOF(arg) == LANGSXP or SYMSXP, arg doesn't need to be enquoted and
-        // - if TYPEOF(arg) == PROMSXP, arg is updated in place.
-        REPROTECT(arg, arg_pi); // unnecessary, for rchk only
-        SEXP val = Rf_eval(name, envir);
-        REPROTECT(val, val_pi); // unnecessary, for rchk only
+        // Replace the super() value by the true_val used for dispatch
+        Rf_defineVar(name, VECTOR_ELT(val, 0), envir);
 
-        if (Rf_inherits(val, "S7_super")) {
+      } else { // val is not a S7_super, a regular value
 
+        // Determine class string to use for method look up
+        SET_VECTOR_ELT(dispatch_classes, i, S7_obj_dispatch(val));
 
-          // Put the super() stored value into the method call.
-          // Note: This means we don't pass along the arg PROMSXP, meaning that
-          // substitute() in methods does not retrieve the `super()` call.
-          // If we wanted substitute() to work here too, we could do:
-          //   if (TYPEOF(arg) == PROMSXP) { SET_PRVALUE(arg, true_val); } else { arg = true_val; }
-          SEXP arg = VECTOR_ELT(val, 0); // true_val used for dispatch
-          APPEND_NODE(mcall_tail, name, arg);
-
-          // Put the super() stored class dispatch vector into dispatch_classes
-          SET_VECTOR_ELT(dispatch_classes, i, VECTOR_ELT(val, 1));
-
-        } else { // val is not a S7_super, a regular value
-
-          // The PROMSXP arg will have been updated in place by Rf_eval() above.
-          // Add to arguments of method call
-          APPEND_NODE(mcall_tail, name, arg);
-
-          // Determine class string to use for method look up
-          SET_VECTOR_ELT(dispatch_classes, i, S7_obj_dispatch(val));
-        }
-      }
-    } else {
-      // other arguments not used for dispatch
-      if (name == R_DotsSymbol) {
-        SETCDR(mcall_tail, Rf_cons(R_DotsSymbol, R_NilValue));
-      } else {
-        // pass along the promise so substitute() works
-        SEXP arg = Rf_findVarInFrame(envir, name);
-        APPEND_NODE(mcall_tail, name, arg);
       }
     }
-
-    mcall_tail = CDR(mcall_tail);
-    formals = CDR(formals);
   }
 
   // Now that we have all the classes, we can look up what method to call
@@ -267,9 +225,10 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   }
 
   Rf_defineVar(method_name, m, envir);
-  SETCAR(mcall, method_name);
 
-  SEXP out = Rf_eval(mcall, envir);
-  UNPROTECT(4);
+  SEXP R_DispatchClosure(SEXP gen, SEXP mname, SEXP method, SEXP rho,
+                         SEXP callrho);
+  SEXP out = R_DispatchClosure(generic, method_name, m, envir, envir);
+  UNPROTECT(2);
   return out;
 }
