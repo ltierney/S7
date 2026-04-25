@@ -226,8 +226,10 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
 
   Rf_defineVar(method_name, m, envir);
 
+  // need this declaration until it is added to the installed headers
   SEXP R_DispatchClosure(SEXP gen, SEXP mname, SEXP method, SEXP rho,
                          SEXP callrho);
+
   SEXP out = R_DispatchClosure(generic, method_name, m, envir, envir);
   UNPROTECT(2);
   return out;
