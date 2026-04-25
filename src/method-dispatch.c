@@ -169,6 +169,7 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   args_ = CDR(args_);
   SEXP generic = CAR(args_); args_ = CDR(args_);
   SEXP envir = CAR(args_); args_ = CDR(args_);
+  SEXP callenv = CAR(args_); args_ = CDR(args_);
 
   // Get the formals and the number of arguments used for dispatch
   SEXP formals = getClosureFormals(generic);
@@ -231,7 +232,7 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
                          SEXP callrho);
 
   // pass envir as callrho for now
-  SEXP out = R_DispatchClosure(generic, method_name, m, envir, envir);
+  SEXP out = R_DispatchClosure(generic, method_name, m, envir, callenv);
   UNPROTECT(2);
   return out;
 }
