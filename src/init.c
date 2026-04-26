@@ -22,7 +22,7 @@ static const R_CallMethodDef CallEntries[] = {
 };
 
 static const R_ExternalMethodDef ExternalEntries[] = {
-    CALLDEF(method_call_, 3),
+    CALLDEF(method_call_, 2),
     {NULL, NULL, 0}
 };
 

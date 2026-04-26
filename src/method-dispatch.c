@@ -169,7 +169,6 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   args_ = CDR(args_);
   SEXP generic = CAR(args_); args_ = CDR(args_);
   SEXP envir = CAR(args_); args_ = CDR(args_);
-  SEXP callenv = CAR(args_); args_ = CDR(args_);
 
   // Get the formals and the number of arguments used for dispatch
   SEXP formals = getClosureFormals(generic);
@@ -227,12 +226,28 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
 
   Rf_defineVar(method_name, m, envir);
 
-  // need this declaration until it is added to the installed headers
-  SEXP R_DispatchClosure(SEXP gen, SEXP mname, SEXP method, SEXP rho,
-                         SEXP callrho);
+  SEXP mcall = PROTECT(LCONS(method_name, R_NilValue));
+  for (SEXP f = getClosureFormals(generic), a = mcall;
+       f != R_NilValue;
+       f = CDR(f)) {
+    SEXP sym = TAG(f);
+    if (sym == R_DotsSymbol) {
+      if (R_DotsExist(envir)) {
+	SETCDR(a, CONS(sym, R_NilValue));
+	a = CDR(a);
+      }
+    }
+    else {
+      SETCDR(a, CONS(sym, R_NilValue));
+      SET_TAG(CDR(a), sym);
+      a = CDR(a);
+    }
+  }
 
-  // pass envir as callrho for now
-  SEXP out = R_DispatchClosure(generic, method_name, m, envir, callenv);
-  UNPROTECT(2);
+  // need this declaration until it is added to the installed headers
+  SEXP R_TailCall(SEXP call, SEXP fun, SEXP rho, SEXP callrho);
+
+  SEXP out = R_TailCall(mcall, m, envir, envir);
+  UNPROTECT(3);
   return out;
 }
